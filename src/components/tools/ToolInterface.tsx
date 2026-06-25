@@ -29,6 +29,7 @@ export default function ToolInterface({
   onProcessFiles,
 }: ToolInterfaceProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const isPdfInput = ['merge', 'split', 'compress', 'pdf2img', 'pdf2word'].includes(toolId);
   const [isDragging, setIsDragging] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [processStep, setProcessStep] = useState(0);
@@ -345,7 +346,7 @@ export default function ToolInterface({
                 onChange={handleFileChange}
                 className="hidden"
                 accept={
-                  toolId.includes('pdf') 
+                  isPdfInput 
                     ? '.pdf' 
                     : toolId === 'word2pdf' 
                     ? '.docx,.doc' 
@@ -367,7 +368,7 @@ export default function ToolInterface({
               </div>
 
               <div className="text-[10px] text-slate-400 font-semibold font-mono border border-slate-200 bg-white px-3 py-1 rounded-full relative z-10 shadow-xs">
-                Formats acceptés : {toolId.includes('pdf') ? 'PDF' : toolId === 'word2pdf' ? 'Word .docx' : 'PNG, JPG, WEBP'}
+                Formats acceptés : {isPdfInput ? 'PDF' : toolId === 'word2pdf' ? 'Word .docx' : 'PNG, JPG, WEBP'}
               </div>
             </div>
 
