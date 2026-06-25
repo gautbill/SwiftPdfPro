@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Image, ArrowRight, Clock, Trash2, Download, CreditCard, Sparkles, AlertCircle, FileSpreadsheet, FileArchive, Layers, ArrowLeftRight, Check, Printer, X } from 'lucide-react';
+import { FileText, Image, ArrowRight, Clock, Trash2, Download, CreditCard, Sparkles, AlertCircle, FileSpreadsheet, FileArchive, Layers, ArrowLeftRight, Check, Printer, X, Shield } from 'lucide-react';
 import { User, Operation, ToolId, Invoice } from '../types';
 
 interface DashboardProps {
@@ -117,47 +117,81 @@ export default function Dashboard({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-in fade-in duration-200">
       {/* Welcome Message Card banner */}
-      <div className="relative bg-gradient-to-br from-blue-600 to-blue-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl overflow-hidden border border-blue-500/20">
+      <div className={`relative bg-gradient-to-br ${currentUser.isAdmin ? 'from-slate-900 to-rose-950 border-rose-500/20' : 'from-blue-600 to-blue-950 border-blue-500/20'} rounded-3xl p-6 sm:p-8 text-white shadow-xl overflow-hidden border`}>
         <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full -translate-y-12 translate-x-12 blur-2xl"></div>
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2">
-            <span className="text-blue-200 text-xs font-extrabold uppercase tracking-widest font-mono">
-              Espace Client Sécurisé
+            <span className="text-rose-300 text-xs font-extrabold uppercase tracking-widest font-mono flex items-center gap-1.5">
+              {currentUser.isAdmin ? (
+                <>
+                  <Shield className="h-3.5 w-3.5 text-rose-400 fill-rose-500/25 animate-pulse" />
+                  Mode Super-Administrateur Actif
+                </>
+              ) : (
+                "Espace Client Sécurisé"
+              )}
             </span>
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight">
               Bonjour, {currentUser.name} !
             </h1>
             <p className="text-slate-100 text-sm max-w-xl leading-relaxed opacity-95">
-              Sélectionnez un outil ci-dessous pour démarrer l'édition de vos fichiers en toute sécurité. Vos documents sont traités localement et supprimés après conversion.
+              {currentUser.isAdmin 
+                ? "Vous êtes connecté avec les privilèges de gestion de la plateforme. Vous pouvez tester n'importe quel outil sans aucune limitation et superviser le système."
+                : "Sélectionnez un outil ci-dessous pour démarrer l'édition de vos fichiers en toute sécurité. Vos documents sont traités localement et supprimés après conversion."
+              }
             </p>
           </div>
 
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/25 shrink-0 self-stretch sm:self-auto flex flex-col justify-center">
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="h-4 w-4 text-amber-300 fill-amber-300" />
-              <span className="text-xs text-slate-100 font-bold uppercase">Formule :</span>
-              <span className="text-xs bg-amber-400 text-slate-950 font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
-                {currentUser.plan}
-              </span>
-            </div>
-            {currentUser.plan === 'free' ? (
-              <div className="space-y-1.5 mt-2">
-                <div className="flex justify-between items-center text-xs text-slate-200">
-                  <span>Crédits restants :</span>
-                  <span className="font-mono font-bold text-white">{remainingTotalCredits}</span>
+            {currentUser.isAdmin ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-rose-300 fill-rose-300/30" />
+                  <span className="text-xs text-slate-100 font-bold uppercase">Rôle :</span>
+                  <span className="text-xs bg-rose-600 text-white font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                    Admin
+                  </span>
+                </div>
+                <div className="text-emerald-300 text-xs font-bold flex items-center gap-1">
+                  <Check className="h-4 w-4" /> Droits système illimités
                 </div>
                 <button
-                  id="dashboard-upgrade-link"
-                  onClick={() => onNavigate('pricing')}
-                  className="w-full bg-white hover:bg-slate-50 text-blue-700 font-bold text-xs py-2 px-4 rounded-xl transition flex items-center justify-center gap-1 cursor-pointer shadow-sm hover:shadow-md"
+                  id="dashboard-goto-admin"
+                  onClick={() => onNavigate('admin')}
+                  className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-2 px-3 rounded-xl transition flex items-center justify-center gap-1 cursor-pointer shadow-sm hover:shadow-md"
                 >
-                  Passer au plan Pro <ArrowRight className="h-3 w-3" />
+                  Ouvrir la Console Admin <ArrowRight className="h-3 w-3" />
                 </button>
               </div>
             ) : (
-              <div className="mt-2 text-emerald-300 text-xs font-bold flex items-center gap-1">
-                <Check className="h-4 w-4" /> Accès illimité débloqué
-              </div>
+              <>
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles className="h-4 w-4 text-amber-300 fill-amber-300" />
+                  <span className="text-xs text-slate-100 font-bold uppercase">Formule :</span>
+                  <span className="text-xs bg-amber-400 text-slate-950 font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                    {currentUser.plan}
+                  </span>
+                </div>
+                {currentUser.plan === 'free' ? (
+                  <div className="space-y-1.5 mt-2">
+                    <div className="flex justify-between items-center text-xs text-slate-200">
+                      <span>Crédits restants :</span>
+                      <span className="font-mono font-bold text-white">{remainingTotalCredits}</span>
+                    </div>
+                    <button
+                      id="dashboard-upgrade-link"
+                      onClick={() => onNavigate('pricing')}
+                      className="w-full bg-white hover:bg-slate-50 text-blue-700 font-bold text-xs py-2 px-4 rounded-xl transition flex items-center justify-center gap-1 cursor-pointer shadow-sm hover:shadow-md"
+                    >
+                      Passer au plan Pro <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-2 text-emerald-300 text-xs font-bold flex items-center gap-1">
+                    <Check className="h-4 w-4" /> Accès illimité débloqué
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -280,42 +314,77 @@ export default function Dashboard({
             <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wider">État de l'utilisation</h3>
             
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-500 font-medium">Formule actuelle :</span>
-                <span className="font-bold uppercase text-blue-600 bg-blue-50 border border-blue-100/40 px-2.5 py-0.5 rounded-md">{currentUser.plan}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-500">Compte créé le :</span>
-                <span className="font-mono text-slate-400">{currentUser.createdAt}</span>
-              </div>
-
-              {currentUser.plan === 'free' ? (
-                <div className="pt-2 border-t border-slate-50 space-y-2">
-                  <div className="flex justify-between text-xs font-bold text-slate-700">
-                    <span>Quota quotidien global</span>
-                    <span className="font-mono text-blue-600">
-                      {totalCreditsUsed} / {dailyFreeLimit * tools.length}
-                    </span>
+              {currentUser.isAdmin ? (
+                <>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500 font-medium">Formule :</span>
+                    <span className="font-bold uppercase text-rose-600 bg-rose-50 border border-rose-100/40 px-2.5 py-0.5 rounded-md">ADMINISTRATEUR</span>
                   </div>
-                  {/* Progress bar */}
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200/50">
-                    <div
-                      className="bg-blue-600 h-full rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min(100, (totalCreditsUsed / (dailyFreeLimit * tools.length)) * 100)}%` }}
-                    ></div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500">Privilèges :</span>
+                    <span className="font-bold text-emerald-600 font-mono text-xs">Illimités & Système</span>
                   </div>
-                  <p className="text-[10px] text-slate-400 leading-normal">
-                    La limite de l'usage gratuit est renouvelée chaque jour à minuit.
-                  </p>
-                </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500">Compte créé le :</span>
+                    <span className="font-mono text-slate-400">{currentUser.createdAt}</span>
+                  </div>
+                  <div className="pt-2 border-t border-slate-50 text-xs text-slate-500 leading-normal space-y-2">
+                    <div className="flex items-center gap-1.5 text-rose-600 font-bold uppercase text-[10px] tracking-wider">
+                      <Shield className="h-4 w-4 fill-rose-100" />
+                      Accès de démonstration système
+                    </div>
+                    <p className="text-[11px] leading-relaxed">
+                      En tant qu'administrateur, vos conversions contournent toutes les limitations de volume ou de taille pour vous permettre de tester les serveurs SwiftPDF en conditions réelles.
+                    </p>
+                    <button
+                      id="sidebar-goto-admin-btn"
+                      onClick={() => onNavigate('admin')}
+                      className="w-full mt-1 bg-slate-950 hover:bg-slate-900 text-white font-bold text-xs py-2 px-3 rounded-xl transition flex items-center justify-center gap-1 cursor-pointer shadow-sm"
+                    >
+                      Console d'administration <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </div>
+                </>
               ) : (
-                <div className="pt-2 border-t border-slate-50 text-xs text-slate-500 leading-normal">
-                  <div className="flex items-center gap-1.5 text-emerald-600 font-bold uppercase text-[10px] tracking-wider mb-1">
-                    <Sparkles className="h-4 w-4 fill-emerald-100" />
-                    Utilisation illimitée
+                <>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500 font-medium">Formule actuelle :</span>
+                    <span className="font-bold uppercase text-blue-600 bg-blue-50 border border-blue-100/40 px-2.5 py-0.5 rounded-md">{currentUser.plan}</span>
                   </div>
-                  Vous bénéficiez du traitement prioritaire haute performance, du support 24/7 et d'une taille de fichiers illimitée.
-                </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500">Compte créé le :</span>
+                    <span className="font-mono text-slate-400">{currentUser.createdAt}</span>
+                  </div>
+
+                  {currentUser.plan === 'free' ? (
+                    <div className="pt-2 border-t border-slate-50 space-y-2">
+                      <div className="flex justify-between text-xs font-bold text-slate-700">
+                        <span>Quota quotidien global</span>
+                        <span className="font-mono text-blue-600">
+                          {totalCreditsUsed} / {dailyFreeLimit * tools.length}
+                        </span>
+                      </div>
+                      {/* Progress bar */}
+                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200/50">
+                        <div
+                          className="bg-blue-600 h-full rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min(100, (totalCreditsUsed / (dailyFreeLimit * tools.length)) * 100)}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-[10px] text-slate-400 leading-normal">
+                        La limite de l'usage gratuit est renouvelée chaque jour à minuit.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="pt-2 border-t border-slate-50 text-xs text-slate-500 leading-normal">
+                      <div className="flex items-center gap-1.5 text-emerald-600 font-bold uppercase text-[10px] tracking-wider mb-1">
+                        <Sparkles className="h-4 w-4 fill-emerald-100" />
+                        Utilisation illimitée
+                      </div>
+                      Vous bénéficiez du traitement prioritaire haute performance, du support 24/7 et d'une taille de fichiers illimitée.
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

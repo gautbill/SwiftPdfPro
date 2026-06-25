@@ -12,6 +12,8 @@ interface AdminPanelProps {
   onUpdateSettings: (settings: Partial<SystemSettings>) => void;
   onUpdateUserPlan: (userId: string, plan: 'free' | 'pro' | 'enterprise') => void;
   onToggleUserStatus: (userId: string) => void;
+  onDeleteUser: (userId: string) => void;
+  onDeleteAllUsersExceptAdmin: () => void;
   onAddLog: (action: string, details: string, type: 'info' | 'warning' | 'success') => void;
   faqsList: FAQItem[];
   onAddFaq: (question: string, answer: string, category: 'pricing' | 'tools' | 'general') => void;
@@ -26,6 +28,8 @@ export default function AdminPanel({
   onUpdateSettings,
   onUpdateUserPlan,
   onToggleUserStatus,
+  onDeleteUser,
+  onDeleteAllUsersExceptAdmin,
   onAddLog,
   faqsList,
   onAddFaq,
@@ -44,6 +48,11 @@ export default function AdminPanel({
   const [faqCategory, setFaqCategory] = useState<'pricing' | 'tools' | 'general'>('general');
   const [faqSuccessMessage, setFaqSuccessMessage] = useState('');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'settings' | 'logs' | 'faq'>('dashboard');
+
+  // Custom dialog/confirmation states
+  const [userToDeleteConfirm, setUserToDeleteConfirm] = useState<User | null>(null);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const handleSubmitFaq = (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +147,7 @@ export default function AdminPanel({
             id="admin-export-csv"
             onClick={() => {
               onAddLog('Export Données', "Exportation des rapports d'utilisation au format CSV", 'info');
-              alert("Exportation simulée : SwiftPDF_Rapport_SaaS_2026.csv téléchargé !");
+              setToastMessage("Exportation simulée : SwiftPDF_Rapport_SaaS_2026.csv téléchargé !");
             }}
             className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-slate-800 dark:text-slate-300 font-bold text-xs py-2 px-3.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer"
           >
@@ -371,18 +380,27 @@ export default function AdminPanel({
                   <h3 className="font-bold text-slate-900 dark:text-zinc-100 text-lg tracking-tight">Utilisateurs enregistrés ({filteredUsers.length})</h3>
                   <p className="text-slate-500 dark:text-slate-400 text-xs">Gérez les comptes des utilisateurs de la plateforme, ajustez leurs abonnements et contrôlez leur accès.</p>
                 </div>
-                <div className="relative w-full sm:max-w-xs shrink-0">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
-                    <Search className="h-4 w-4" />
-                  </span>
-                  <input
-                    id="admin-users-search"
-                    type="text"
-                    placeholder="Rechercher par nom, email..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs dark:text-zinc-100 focus:outline-hidden focus:border-blue-500"
-                  />
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto shrink-0">
+                  <div className="relative w-full sm:max-w-xs shrink-0">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                      <Search className="h-4 w-4" />
+                    </span>
+                    <input
+                      id="admin-users-search"
+                      type="text"
+                      placeholder="Rechercher par nom, email..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs dark:text-zinc-100 focus:outline-hidden focus:border-blue-500"
+                    />
+                  </div>
+                  <button
+                    id="admin-delete-all-except-admin"
+                    onClick={() => setShowDeleteAllConfirm(true)}
+                    className="bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/20 dark:hover:bg-rose-950/40 dark:text-rose-400 font-bold text-xs py-2.5 px-3.5 rounded-xl border border-rose-100 dark:border-rose-900/30 transition flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Trash className="h-3.5 w-3.5" /> Supprimer tous sauf l'admin
+                  </button>
                 </div>
               </div>
 
@@ -437,20 +455,32 @@ export default function AdminPanel({
                           </span>
                         </td>
                         <td className="py-3.5 px-4 text-right">
-                          <button
-                            id={`toggle-status-${user.id}`}
-                            onClick={() => {
-                              onToggleUserStatus(user.id);
-                              onAddLog('Statut Modifié', `Changement de statut pour ${user.email}`, 'warning');
-                            }}
-                            className={`text-[11px] font-bold py-1.5 px-3 rounded-lg transition-colors cursor-pointer ${
-                              user.status === 'active'
-                                ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40'
-                                : 'text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40'
-                            }`}
-                          >
-                            {user.status === 'active' ? 'Suspendre' : 'Réactiver'}
-                          </button>
+                          <div className="flex justify-end items-center gap-1">
+                            <button
+                              id={`toggle-status-${user.id}`}
+                              onClick={() => {
+                                onToggleUserStatus(user.id);
+                                onAddLog('Statut Modifié', `Changement de statut pour ${user.email}`, 'warning');
+                              }}
+                              className={`text-[11px] font-bold py-1.5 px-3 rounded-lg transition-colors cursor-pointer ${
+                                user.status === 'active'
+                                  ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40'
+                                  : 'text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40'
+                              }`}
+                            >
+                                {user.status === 'active' ? 'Suspendre' : 'Réactiver'}
+                            </button>
+                            {!user.isAdmin && (
+                              <button
+                                id={`delete-user-${user.id}`}
+                                onClick={() => setUserToDeleteConfirm(user)}
+                                className="p-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/30 rounded-lg transition cursor-pointer"
+                                title="Supprimer définitivement"
+                              >
+                                <Trash className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -722,6 +752,96 @@ export default function AdminPanel({
                       )}
                     </div>
                   </form>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Custom Toast Notifications */}
+          {toastMessage && (
+            <div className="fixed bottom-6 right-6 z-50 bg-slate-900 dark:bg-zinc-800 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-800 dark:border-zinc-700 flex items-center gap-2 animate-in slide-in-from-bottom duration-300">
+              <CheckCircle className="h-4 w-4 text-emerald-400" />
+              <span className="text-xs font-bold font-mono">{toastMessage}</span>
+              <button onClick={() => setToastMessage(null)} className="ml-2 text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
+            </div>
+          )}
+
+          {/* Custom Modal for Single User Delete Confirm */}
+          {userToDeleteConfirm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full border border-slate-100 dark:border-slate-800 shadow-2xl animate-in zoom-in-95 duration-150">
+                <div className="flex items-center gap-3 text-rose-600 mb-4">
+                  <div className="p-2 bg-rose-50 dark:bg-rose-950/30 rounded-xl">
+                    <AlertTriangle className="h-6 w-6 text-rose-500" />
+                  </div>
+                  <h3 className="text-lg font-black tracking-tight dark:text-zinc-100">Confirmer la suppression</h3>
+                </div>
+                
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+                  Êtes-vous sûr de vouloir supprimer définitivement l'utilisateur{' '}
+                  <strong className="text-slate-900 dark:text-zinc-100">{userToDeleteConfirm.name}</strong> ({userToDeleteConfirm.email}) ?
+                  <span className="block mt-2 text-xs text-rose-500 font-semibold font-mono">
+                    ⚠️ Cette opération est irréversible et supprimera tout son historique.
+                  </span>
+                </p>
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setUserToDeleteConfirm(null)}
+                    className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-zinc-300 font-bold text-xs py-2.5 px-4 rounded-xl transition cursor-pointer"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={() => {
+                      onDeleteUser(userToDeleteConfirm.id);
+                      setToastMessage(`Utilisateur ${userToDeleteConfirm.email} supprimé.`);
+                      setUserToDeleteConfirm(null);
+                    }}
+                    className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition cursor-pointer shadow-sm shadow-rose-100 dark:shadow-none"
+                  >
+                    Supprimer définitivement
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Custom Modal for Delete All Except Admin Confirm */}
+          {showDeleteAllConfirm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full border border-slate-100 dark:border-slate-800 shadow-2xl animate-in zoom-in-95 duration-150">
+                <div className="flex items-center gap-3 text-rose-600 mb-4">
+                  <div className="p-2 bg-rose-50 dark:bg-rose-950/30 rounded-xl">
+                    <AlertTriangle className="h-6 w-6 text-rose-500" />
+                  </div>
+                  <h3 className="text-lg font-black tracking-tight dark:text-zinc-100">SUPPRESSION TOTALE</h3>
+                </div>
+                
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+                  Êtes-vous sûr de vouloir supprimer <strong className="text-rose-600">TOUS les utilisateurs</strong> de la base de données (à l'exception des administrateurs) ?
+                  <span className="block mt-2 text-xs text-rose-500 font-semibold font-mono border border-rose-100 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/10 p-2 rounded-lg">
+                    ⚠️ DANGER : Cette action est définitive et effacera l'intégralité des clients de démonstration.
+                  </span>
+                </p>
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowDeleteAllConfirm(false)}
+                    className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-zinc-300 font-bold text-xs py-2.5 px-4 rounded-xl transition cursor-pointer"
+                  >
+                    Annuler et préserver
+                  </button>
+                  <button
+                    onClick={() => {
+                      onDeleteAllUsersExceptAdmin();
+                      setToastMessage("Tous les utilisateurs non-administrateurs ont été supprimés.");
+                      setShowDeleteAllConfirm(false);
+                    }}
+                    className="bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition cursor-pointer shadow-md shadow-rose-100 dark:shadow-none"
+                  >
+                    Tout détruire sauf l'admin
+                  </button>
                 </div>
               </div>
             </div>

@@ -27,6 +27,7 @@ export interface Operation {
   size: string;
   status: 'success' | 'failed';
   downloadUrl?: string;
+  userId?: string;
 }
 
 export interface Invoice {
@@ -36,6 +37,7 @@ export interface Invoice {
   plan: string;
   status: 'paid' | 'pending';
   pdfName: string;
+  userId?: string;
 }
 
 export interface SystemLog {

@@ -124,6 +124,7 @@ const SEED_OPERATIONS: Operation[] = [
     size: '4.2 Mo',
     status: 'success',
     downloadUrl: '#',
+    userId: 'user_1',
   },
   {
     id: 'op_2',
@@ -133,6 +134,7 @@ const SEED_OPERATIONS: Operation[] = [
     size: '1.1 Mo',
     status: 'success',
     downloadUrl: '#',
+    userId: 'user_1',
   },
   {
     id: 'op_3',
@@ -142,6 +144,7 @@ const SEED_OPERATIONS: Operation[] = [
     size: '8.5 Mo',
     status: 'success',
     downloadUrl: '#',
+    userId: 'user_1',
   }
 ];
 
@@ -208,6 +211,7 @@ export default function App() {
         plan: 'Professionnel (Pro)',
         status: 'paid',
         pdfName: 'facture_swiftpdf_pro_2026_4859.pdf',
+        userId: 'user_1',
       }
     ];
   });
@@ -303,7 +307,7 @@ export default function App() {
   };
 
   // User Actions
-  const handleLoginSuccess = (email: string, name: string, isAdmin: boolean) => {
+  const handleLoginSuccess = (email: string, name: string, isAdmin: boolean): boolean => {
     // Check if user already exists in user database
     let existingUser = usersList.find((u) => u.email.toLowerCase() === email.toLowerCase());
 
@@ -325,13 +329,13 @@ export default function App() {
     } else {
       // Keep admin status synced if they log in via Admin option
       if (isAdmin) {
-        existingUser.isAdmin = true;
+        existingUser = { ...existingUser, isAdmin: true };
+        setUsersList((prev) => prev.map((u) => u.email.toLowerCase() === email.toLowerCase() ? { ...u, isAdmin: true } : u));
       }
     }
 
     if (existingUser.status === 'suspended') {
-      alert("Votre compte a été suspendu par l'administrateur de SwiftPDF. Veuillez contacter le service d'assistance.");
-      return;
+      return false;
     }
 
     setCurrentUser(existingUser);
@@ -349,6 +353,7 @@ export default function App() {
       type: 'success',
     };
     setLogs((prev) => [newLog, ...prev]);
+    return true;
   };
 
   const handleLogout = () => {
@@ -374,6 +379,7 @@ export default function App() {
         plan: plan === 'pro' ? 'Professionnel (Pro)' : 'Entreprise',
         status: 'paid',
         pdfName: `facture_swiftpdf_${plan}_2026_${invId.split('-')[2]}.pdf`,
+        userId: currentUser.id,
       };
       setInvoices((prev) => [newInvoice, ...prev]);
       addSystemLog('Abonnement', `Passage au forfait ${plan.toUpperCase()} (${price} €)`, 'success');
@@ -427,6 +433,7 @@ export default function App() {
       size,
       status: 'success',
       downloadUrl,
+      userId: currentUser.id,
     };
     setRecentOperations((prev) => [newOp, ...prev]);
 
@@ -497,6 +504,19 @@ export default function App() {
     if (faqToDelete) {
       addSystemLog('FAQ Supprimée', `FAQ supprimée : "${faqToDelete.question.substring(0, 30)}..."`, 'warning');
     }
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    const userToDelete = usersList.find((u) => u.id === userId);
+    setUsersList((prev) => prev.filter((u) => u.id !== userId));
+    if (userToDelete) {
+      addSystemLog('Suppression Utilisateur', `Utilisateur supprimé : ${userToDelete.email}`, 'warning');
+    }
+  };
+
+  const handleDeleteAllUsersExceptAdmin = () => {
+    setUsersList((prev) => prev.filter((u) => u.isAdmin || u.email === currentUser?.email));
+    addSystemLog('Base de données', 'Tous les utilisateurs sauf l\'administrateur ont été supprimés', 'warning');
   };
 
   // Render proper screen
@@ -589,8 +609,8 @@ export default function App() {
         return (
           <Dashboard
             currentUser={currentUser}
-            recentOperations={recentOperations}
-            invoices={invoices}
+            recentOperations={recentOperations.filter((op) => op.userId === currentUser.id)}
+            invoices={invoices.filter((inv) => inv.userId === currentUser.id)}
             dailyFreeLimit={settings.dailyFreeLimit}
             onSelectTool={(toolId) => setActiveScreen(toolId)}
             onNavigate={setActiveScreen}
@@ -614,6 +634,8 @@ export default function App() {
             onUpdateSettings={handleUpdateSettings}
             onUpdateUserPlan={handleUpdateUserPlan}
             onToggleUserStatus={handleToggleUserStatus}
+            onDeleteUser={handleDeleteUser}
+            onDeleteAllUsersExceptAdmin={handleDeleteAllUsersExceptAdmin}
             onAddLog={addSystemLog}
             faqsList={faqsList}
             onAddFaq={handleAddFaq}
@@ -642,8 +664,10 @@ export default function App() {
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                    <span className="block text-xs text-slate-400">Forfait actuel</span>
-                    <span className="block font-bold capitalize text-blue-700 text-sm mt-0.5">{currentUser.plan}</span>
+                    <span className="block text-xs text-slate-400">{currentUser.isAdmin ? 'Rôle Système' : 'Forfait actuel'}</span>
+                    <span className={`block font-bold capitalize text-sm mt-0.5 ${currentUser.isAdmin ? 'text-rose-600' : 'text-blue-700'}`}>
+                      {currentUser.isAdmin ? 'Administrateur' : currentUser.plan}
+                    </span>
                   </div>
                   <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
                     <span className="block text-xs text-slate-400">Date d'inscription</span>

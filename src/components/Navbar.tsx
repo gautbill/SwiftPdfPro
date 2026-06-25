@@ -62,17 +62,19 @@ export default function Navbar({
 
           {/* Desktop Controls */}
           <div className="hidden md:flex items-center space-x-5">
-            <button
-              id="nav-landing-btn"
-              onClick={() => handleNav('landing')}
-              className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors cursor-pointer ${
-                activeScreen === 'landing'
-                  ? 'text-blue-600 bg-blue-50/70 border border-blue-100/50'
-                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
-              }`}
-            >
-              Accueil
-            </button>
+            {!currentUser && (
+              <button
+                id="nav-landing-btn"
+                onClick={() => handleNav('landing')}
+                className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+                  activeScreen === 'landing'
+                    ? 'text-blue-600 bg-blue-50/70 border border-blue-100/50'
+                    : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                }`}
+              >
+                Accueil
+              </button>
+            )}
             {currentUser && (
               <button
                 id="nav-dashboard-btn"
@@ -86,17 +88,19 @@ export default function Navbar({
                 Tableau de bord
               </button>
             )}
-            <button
-              id="nav-pricing-btn"
-              onClick={() => handleNav('pricing')}
-              className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors cursor-pointer ${
-                activeScreen === 'pricing'
-                  ? 'text-blue-600 bg-blue-50/70 border border-blue-100/50'
-                  : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
-              }`}
-            >
-              Abonnements
-            </button>
+            {!currentUser && (
+              <button
+                id="nav-pricing-btn"
+                onClick={() => handleNav('pricing')}
+                className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+                  activeScreen === 'pricing'
+                    ? 'text-blue-600 bg-blue-50/70 border border-blue-100/50'
+                    : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
+                }`}
+              >
+                Abonnements
+              </button>
+            )}
 
             {currentUser?.isAdmin && (
               <button
@@ -113,34 +117,7 @@ export default function Navbar({
               </button>
             )}
 
-            {/* Quick Testing Controls (Header Badge) */}
-            {currentUser && (
-              <div className="flex items-center gap-2 px-3 py-1 bg-blue-50/50 rounded-full border border-blue-100/60">
-                <span className="text-[10px] uppercase font-mono font-bold text-blue-500">
-                  Plan :
-                </span>
-                <span className={`text-[11px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                  currentUser.plan === 'enterprise' 
-                    ? 'bg-purple-100 text-purple-700' 
-                    : currentUser.plan === 'pro' 
-                    ? 'bg-amber-100 text-amber-700' 
-                    : 'bg-blue-100 text-blue-700'
-                }`}>
-                  {currentUser.plan}
-                </span>
-                {/* Simulated quick switches */}
-                <select
-                  aria-label="Changer de forfait (Test)"
-                  value={currentUser.plan}
-                  onChange={(e) => onChangePlan(e.target.value as any)}
-                  className="bg-transparent border-none text-xs text-blue-700 font-bold focus:outline-hidden cursor-pointer"
-                >
-                  <option value="free">Test: Gratuit</option>
-                  <option value="pro">Test: Pro</option>
-                  <option value="enterprise">Test: Enterprise</option>
-                </select>
-              </div>
-            )}
+
 
             {/* Global Dark Mode Toggle */}
             <button
@@ -242,17 +219,19 @@ export default function Navbar({
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-b border-slate-100 py-3 px-4 space-y-3 shadow-md animate-in slide-in-from-top duration-200">
-          <button
-            id="mobile-nav-landing-btn"
-            onClick={() => handleNav('landing')}
-            className={`block w-full text-left px-3 py-2.5 rounded-lg text-base font-semibold ${
-              activeScreen === 'landing'
-                ? 'text-blue-600 bg-blue-50 border border-blue-100/30'
-                : 'text-slate-700 hover:bg-slate-50'
-            }`}
-          >
-            Accueil
-          </button>
+          {!currentUser && (
+            <button
+              id="mobile-nav-landing-btn"
+              onClick={() => handleNav('landing')}
+              className={`block w-full text-left px-3 py-2.5 rounded-lg text-base font-semibold ${
+                activeScreen === 'landing'
+                  ? 'text-blue-600 bg-blue-50 border border-blue-100/30'
+                  : 'text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              Accueil
+            </button>
+          )}
           {currentUser && (
             <button
               id="mobile-nav-dashboard-btn"
@@ -266,17 +245,19 @@ export default function Navbar({
               Tableau de bord
             </button>
           )}
-          <button
-            id="mobile-nav-pricing-btn"
-            onClick={() => handleNav('pricing')}
-            className={`block w-full text-left px-3 py-2.5 rounded-lg text-base font-semibold ${
-              activeScreen === 'pricing'
-                ? 'text-blue-600 bg-blue-50 border border-blue-100/30'
-                : 'text-slate-700 hover:bg-slate-50'
-            }`}
-          >
-            Abonnements
-          </button>
+          {!currentUser && (
+            <button
+              id="mobile-nav-pricing-btn"
+              onClick={() => handleNav('pricing')}
+              className={`block w-full text-left px-3 py-2.5 rounded-lg text-base font-semibold ${
+                activeScreen === 'pricing'
+                  ? 'text-blue-600 bg-blue-50 border border-blue-100/30'
+                  : 'text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              Abonnements
+            </button>
+          )}
 
           {/* Global Dark Mode Toggle */}
           <button
@@ -302,29 +283,7 @@ export default function Navbar({
             </button>
           )}
 
-          {currentUser && (
-            <div className="p-3 bg-blue-50/30 rounded-xl border border-blue-100/50 space-y-2">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-500 font-medium">Abonnement actuel:</span>
-                <span className="font-bold text-blue-600 uppercase bg-blue-50 px-2 py-0.5 rounded-md">
-                  {currentUser.plan}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-slate-500">Forfait test :</span>
-                <select
-                  aria-label="Changer de forfait mobile (Test)"
-                  value={currentUser.plan}
-                  onChange={(e) => onChangePlan(e.target.value as any)}
-                  className="bg-transparent text-xs text-slate-700 font-bold focus:outline-hidden"
-                >
-                  <option value="free">Gratuit</option>
-                  <option value="pro">Pro</option>
-                  <option value="enterprise">Enterprise</option>
-                </select>
-              </div>
-            </div>
-          )}
+
 
           {currentUser ? (
             <div className="pt-2 border-t border-slate-100 space-y-1">
