@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Shield, Users, CreditCard, Activity, Search, AlertTriangle, CheckCircle, Sliders, Settings, Download } from 'lucide-react';
-import { User, SystemLog, SystemSettings } from '../types';
+import { 
+  Shield, Users, CreditCard, Activity, Search, AlertTriangle, 
+  CheckCircle, Sliders, Settings, Download, Plus, Trash, Edit3, HelpCircle 
+} from 'lucide-react';
+import { User, SystemLog, SystemSettings, FAQItem } from '../types';
 
 interface AdminPanelProps {
   usersList: User[];
@@ -10,6 +13,10 @@ interface AdminPanelProps {
   onUpdateUserPlan: (userId: string, plan: 'free' | 'pro' | 'enterprise') => void;
   onToggleUserStatus: (userId: string) => void;
   onAddLog: (action: string, details: string, type: 'info' | 'warning' | 'success') => void;
+  faqsList: FAQItem[];
+  onAddFaq: (question: string, answer: string, category: 'pricing' | 'tools' | 'general') => void;
+  onEditFaq: (id: string, question: string, answer: string, category: 'pricing' | 'tools' | 'general') => void;
+  onDeleteFaq: (id: string) => void;
 }
 
 export default function AdminPanel({
@@ -20,11 +27,59 @@ export default function AdminPanel({
   onUpdateUserPlan,
   onToggleUserStatus,
   onAddLog,
+  faqsList,
+  onAddFaq,
+  onEditFaq,
+  onDeleteFaq,
 }: AdminPanelProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [limitInput, setLimitInput] = useState(settings.dailyFreeLimit);
   const [proPriceInput, setProPriceInput] = useState(settings.proPriceMonthly);
   const [entPriceInput, setEntPriceInput] = useState(settings.enterprisePriceMonthly);
+
+  // FAQ management states
+  const [editingFaqId, setEditingFaqId] = useState<string | null>(null);
+  const [faqQuestion, setFaqQuestion] = useState('');
+  const [faqAnswer, setFaqAnswer] = useState('');
+  const [faqCategory, setFaqCategory] = useState<'pricing' | 'tools' | 'general'>('general');
+  const [faqSuccessMessage, setFaqSuccessMessage] = useState('');
+
+  const handleSubmitFaq = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!faqQuestion.trim() || !faqAnswer.trim()) return;
+
+    if (editingFaqId) {
+      onEditFaq(editingFaqId, faqQuestion, faqAnswer, faqCategory);
+      setFaqSuccessMessage('FAQ mise à jour avec succès !');
+    } else {
+      onAddFaq(faqQuestion, faqAnswer, faqCategory);
+      setFaqSuccessMessage('FAQ ajoutée avec succès !');
+    }
+
+    // Reset Form
+    setEditingFaqId(null);
+    setFaqQuestion('');
+    setFaqAnswer('');
+    setFaqCategory('general');
+
+    setTimeout(() => {
+      setFaqSuccessMessage('');
+    }, 3000);
+  };
+
+  const handleStartEditFaq = (faq: FAQItem) => {
+    setEditingFaqId(faq.id);
+    setFaqQuestion(faq.question);
+    setFaqAnswer(faq.answer);
+    setFaqCategory(faq.category);
+  };
+
+  const handleCancelEditFaq = () => {
+    setEditingFaqId(null);
+    setFaqQuestion('');
+    setFaqAnswer('');
+    setFaqCategory('general');
+  };
 
   const filteredUsers = usersList.filter(
     (u) =>
@@ -416,6 +471,157 @@ export default function AdminPanel({
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* FAQ Manager Section */}
+      <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-6">
+        <div className="border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="h-5 w-5 text-blue-600" />
+            <h3 className="font-bold text-slate-900 text-lg tracking-tight">Gestion de la Foire aux Questions (FAQ)</h3>
+          </div>
+          <p className="text-slate-500 text-xs mt-1">
+            Gérez les questions-réponses interactives affichées en accordéon sur la page d'accueil de la plateforme.
+          </p>
+        </div>
+
+        {faqSuccessMessage && (
+          <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs p-3.5 rounded-xl font-medium animate-in fade-in duration-200">
+            {faqSuccessMessage}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* FAQ list table - 3 cols */}
+          <div className="lg:col-span-3 space-y-4">
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Questions enregistrées ({faqsList.length})</h4>
+            
+            <div className="space-y-3 max-h-[380px] overflow-y-auto pr-2">
+              {faqsList.map((faq) => (
+                <div key={faq.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-2 flex justify-between items-start gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-block text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${
+                        faq.category === 'pricing'
+                          ? 'bg-amber-100 text-amber-800'
+                          : faq.category === 'tools'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-purple-100 text-purple-800'
+                      }`}>
+                        {faq.category === 'pricing' ? 'Tarifs' : faq.category === 'tools' ? 'Outils' : 'Général'}
+                      </span>
+                      <span className="text-xs font-bold text-slate-800">{faq.question}</span>
+                    </div>
+                    <p className="text-xs text-slate-500 leading-relaxed">{faq.answer}</p>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      id={`edit-faq-${faq.id}`}
+                      onClick={() => handleStartEditFaq(faq)}
+                      className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-white rounded-lg border border-transparent hover:border-slate-100 transition cursor-pointer"
+                      title="Modifier cette FAQ"
+                    >
+                      <Edit3 className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      id={`delete-faq-${faq.id}`}
+                      onClick={() => onDeleteFaq(faq.id)}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg border border-transparent hover:border-slate-100 transition cursor-pointer"
+                      title="Supprimer cette FAQ"
+                    >
+                      <Trash className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {faqsList.length === 0 && (
+                <div className="text-center py-10 bg-slate-50/50 border border-dashed border-slate-100 rounded-xl text-slate-400 text-xs">
+                  Aucune FAQ enregistrée. Utilisez le formulaire pour en ajouter une.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Add/Edit Form - 2 cols */}
+          <div className="lg:col-span-2 bg-slate-50/60 border border-slate-100 p-5 rounded-2xl space-y-4">
+            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+              <span>{editingFaqId ? 'Modifier la FAQ' : 'Ajouter une FAQ'}</span>
+              {editingFaqId && <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded-sm">MODE ÉDITION</span>}
+            </h4>
+
+            <form onSubmit={handleSubmitFaq} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1" htmlFor="faq-form-question">
+                  Question
+                </label>
+                <input
+                  id="faq-form-question"
+                  type="text"
+                  required
+                  placeholder="Ex: Quelle est la taille maximale des fichiers ?"
+                  value={faqQuestion}
+                  onChange={(e) => setFaqQuestion(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1" htmlFor="faq-form-category">
+                  Catégorie
+                </label>
+                <select
+                  id="faq-form-category"
+                  value={faqCategory}
+                  onChange={(e) => setFaqCategory(e.target.value as any)}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs cursor-pointer focus:outline-hidden"
+                >
+                  <option value="general">Général & Sécurité</option>
+                  <option value="pricing">Tarifs & Abonnements</option>
+                  <option value="tools">Utilisation des outils</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1" htmlFor="faq-form-answer">
+                  Réponse
+                </label>
+                <textarea
+                  id="faq-form-answer"
+                  required
+                  rows={4}
+                  placeholder="Ex: Tous vos fichiers sont chiffrés et stockés temporairement pour être supprimés 2 heures après..."
+                  value={faqAnswer}
+                  onChange={(e) => setFaqAnswer(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs leading-relaxed resize-none"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  id="faq-form-submit-btn"
+                  type="submit"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  {editingFaqId ? <CheckCircle className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+                  <span>{editingFaqId ? 'Enregistrer' : 'Créer la FAQ'}</span>
+                </button>
+                
+                {editingFaqId && (
+                  <button
+                    id="faq-form-cancel-btn"
+                    type="button"
+                    onClick={handleCancelEditFaq}
+                    className="bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 font-bold py-2.5 px-3.5 rounded-xl transition cursor-pointer"
+                  >
+                    Annuler
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>

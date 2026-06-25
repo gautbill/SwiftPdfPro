@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layers, Mail, Lock, User, ArrowRight, Sparkles, Check, AlertCircle, Shield } from 'lucide-react';
 
 interface AuthProps {
@@ -13,6 +13,15 @@ export default function Auth({ onLoginSuccess, initialMode = 'login' }: AuthProp
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Sync internal mode state with initialMode prop when it changes
+  useEffect(() => {
+    setMode(initialMode);
+    setEmail('');
+    setName('');
+    setPassword('');
+    setError(''); // Clear any previous error on mode toggle
+  }, [initialMode]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

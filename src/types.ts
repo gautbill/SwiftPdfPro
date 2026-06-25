@@ -62,3 +62,11 @@ export interface ToolDefinition {
   category: 'pdf' | 'image';
   popular?: boolean;
 }
+
+export interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+  category: 'pricing' | 'tools' | 'general';
+}
+

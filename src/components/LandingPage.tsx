@@ -3,14 +3,17 @@ import {
   Layers, Shield, Zap, Sparkles, ArrowRight, Lock, FileText, Image as ImageIcon, 
   Check, Play, Star, ChevronDown, RefreshCw, FileCode, Users, X
 } from 'lucide-react';
+import { FAQItem } from '../types';
 
 interface LandingPageProps {
   onNavigate: (screen: string) => void;
   currentUser: any;
+  faqsList?: FAQItem[];
 }
 
-export default function LandingPage({ onNavigate, currentUser }: LandingPageProps) {
+export default function LandingPage({ onNavigate, currentUser, faqsList = [] }: LandingPageProps) {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'pricing' | 'tools' | 'general'>('all');
 
   const stats = [
     { label: 'Fichiers convertis', value: '1.2M+' },
@@ -80,24 +83,9 @@ export default function LandingPage({ onNavigate, currentUser }: LandingPageProp
     },
   ];
 
-  const faqs = [
-    {
-      q: "Mes documents restent-ils confidentiels et sécurisés ?",
-      a: "Absolument. La sécurité est notre priorité absolue. Tous vos fichiers sont chiffrés de bout en bout (SSL 256-bit) lors du transfert. De plus, ils sont définitivement supprimés de nos serveurs sécurisés 2 heures après le traitement, conformément aux exigences strictes du RGPD."
-    },
-    {
-      q: "Quelles sont les limites du forfait gratuit ?",
-      a: "Avec le forfait gratuit, vous disposez de 3 crédits de conversion par jour à utiliser sur l'ensemble de nos outils. Il n'y a aucune fonctionnalité cachée ou bridée, vous testez la puissance maximale de nos serveurs en toute liberté."
-    },
-    {
-      q: "Comment fonctionne l'abonnement SwiftPDF Pro ?",
-      a: "L'abonnement Pro supprime toutes les limites quotidiennes de fichiers et débloque le traitement ultra-rapide par lot. Vous pouvez convertir et modifier autant de fichiers que vous le souhaitez sans attente. L'engagement est mensuel et résiliable en 1 clic."
-    },
-    {
-      q: "Puis-je utiliser SwiftPDF sur mon smartphone ?",
-      a: "Oui ! SwiftPDF Pro est une application web progressive, entièrement responsive. Elle fonctionne à la perfection sur iPhone, Android, tablettes et ordinateurs, sans qu'aucune installation ne soit requise."
-    }
-  ];
+  const filteredFaqs = faqsList.filter(
+    (faq) => selectedCategory === 'all' || faq.category === selectedCategory
+  );
 
   const handleStart = (toolId?: string) => {
     if (currentUser) {
@@ -456,27 +444,58 @@ export default function LandingPage({ onNavigate, currentUser }: LandingPageProp
           <p className="text-slate-500 text-sm">Tout ce que vous devez savoir pour démarrer avec SwiftPDF Pro.</p>
         </div>
 
+        {/* Catégories Filter */}
+        <div className="flex flex-wrap justify-center gap-2">
+          {[
+            { id: 'all', label: 'Toutes les questions' },
+            { id: 'pricing', label: 'Tarifs & Abonnements' },
+            { id: 'tools', label: 'Utilisation des outils' },
+            { id: 'general', label: 'Sécurité & Général' },
+          ].map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => {
+                setSelectedCategory(cat.id as any);
+                setActiveFaq(null); // Reset open accordion on category switch
+              }}
+              className={`text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer ${
+                selectedCategory === cat.id
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-100 dark:shadow-none'
+                  : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200/60 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-slate-300 dark:border-slate-800'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
         <div className="space-y-4 text-left">
-          {faqs.map((faq, idx) => (
+          {filteredFaqs.map((faq, idx) => (
             <div 
-              key={idx} 
-              className="bg-white border border-slate-100 rounded-2xl shadow-xs overflow-hidden transition"
+              key={faq.id} 
+              className="bg-white border border-slate-100 rounded-2xl shadow-xs overflow-hidden transition dark:bg-slate-900 dark:border-slate-800"
             >
               <button
                 id={`faq-btn-${idx}`}
                 onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                className="w-full flex items-center justify-between p-5 text-left font-bold text-slate-800 hover:text-blue-600 transition cursor-pointer"
+                className="w-full flex items-center justify-between p-5 text-left font-bold text-slate-800 hover:text-blue-600 dark:text-zinc-100 dark:hover:text-blue-400 transition cursor-pointer"
               >
-                <span>{faq.q}</span>
-                <ChevronDown className={`h-4 w-4 shrink-0 transition-transform text-slate-400 ${activeFaq === idx ? 'rotate-180 text-blue-600' : ''}`} />
+                <span>{faq.question}</span>
+                <ChevronDown className={`h-4 w-4 shrink-0 transition-transform text-slate-400 ${activeFaq === idx ? 'rotate-180 text-blue-600 dark:text-blue-400' : ''}`} />
               </button>
               {activeFaq === idx && (
-                <div className="px-5 pb-5 pt-0 text-slate-500 text-sm leading-relaxed border-t border-slate-50 animate-in slide-in-from-top duration-200">
-                  {faq.a}
+                <div className="px-5 pb-5 pt-0 text-slate-500 text-sm leading-relaxed border-t border-slate-50 dark:border-slate-800 dark:text-zinc-300 animate-in slide-in-from-top duration-200">
+                  {faq.answer}
                 </div>
               )}
             </div>
           ))}
+
+          {filteredFaqs.length === 0 && (
+            <div className="text-center py-10 bg-slate-50 border border-dashed border-slate-200 rounded-2xl dark:bg-slate-900/40 dark:border-slate-800">
+              <p className="text-slate-400 text-sm font-medium">Aucune question fréquente enregistrée dans cette catégorie.</p>
+            </div>
+          )}
         </div>
       </section>
 

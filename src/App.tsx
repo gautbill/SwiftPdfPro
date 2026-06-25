@@ -9,7 +9,7 @@ import LandingPage from './components/LandingPage';
 import ImageConverter from './components/tools/ImageConverter';
 import ImageToPdf from './components/tools/ImageToPdf';
 import GenericTool from './components/tools/GenericTool';
-import { User, Operation, Invoice, SystemLog, SystemSettings, ToolId } from './types';
+import { User, Operation, Invoice, SystemLog, SystemSettings, ToolId, FAQItem } from './types';
 import { Sparkles, Mail, User as UserIcon, Calendar, Check, Shield, AlertTriangle } from 'lucide-react';
 
 const SEED_USERS: User[] = [
@@ -152,6 +152,33 @@ const SEED_SETTINGS: SystemSettings = {
   maintenanceMode: false,
 };
 
+const SEED_FAQS: FAQItem[] = [
+  {
+    id: 'faq_1',
+    question: "Mes documents restent-ils confidentiels et sécurisés ?",
+    answer: "Absolument. La sécurité est notre priorité absolue. Tous vos fichiers sont chiffrés de bout en bout (SSL 256-bit) lors du transfert. De plus, ils sont définitivement supprimés de nos serveurs sécurisés 2 heures après le traitement, conformément aux exigences strictes du RGPD.",
+    category: 'general',
+  },
+  {
+    id: 'faq_2',
+    question: "Quelles sont les limites du forfait gratuit ?",
+    answer: "Avec le forfait gratuit, vous disposez de 3 crédits de conversion par jour à utiliser sur l'ensemble de nos outils. Il n'y a aucune fonctionnalité cachée ou bridée, vous testez la puissance maximale de nos serveurs en toute liberté.",
+    category: 'pricing',
+  },
+  {
+    id: 'faq_3',
+    question: "Comment fonctionne l'abonnement SwiftPDF Pro ?",
+    answer: "L'abonnement Pro supprime toutes les limites quotidiennes de fichiers et débloque le traitement ultra-rapide par lot. Vous pouvez convertir et modifier autant de fichiers que vous le souhaitez sans attente. L'engagement est mensuel et résiliable en 1 clic.",
+    category: 'pricing',
+  },
+  {
+    id: 'faq_4',
+    question: "Puis-je utiliser SwiftPDF sur mon smartphone ?",
+    answer: "Oui ! SwiftPDF Pro est une application web progressive, entièrement responsive. Elle fonctionne à la perfection sur iPhone, Android, tablettes et ordinateurs, sans qu'aucune installation ne soit requise.",
+    category: 'tools',
+  }
+];
+
 export default function App() {
   // Load initial states from LocalStorage or Fallback to seeds
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
@@ -193,6 +220,11 @@ export default function App() {
   const [logs, setLogs] = useState<SystemLog[]>(() => {
     const saved = localStorage.getItem('swiftpdf_logs');
     return saved ? JSON.parse(saved) : SEED_LOGS;
+  });
+
+  const [faqsList, setFaqsList] = useState<FAQItem[]>(() => {
+    const saved = localStorage.getItem('swiftpdf_faqs');
+    return saved ? JSON.parse(saved) : SEED_FAQS;
   });
 
   const [activeScreen, setActiveScreen] = useState<string>(() => {
@@ -243,6 +275,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('swiftpdf_logs', JSON.stringify(logs));
   }, [logs]);
+
+  useEffect(() => {
+    localStorage.setItem('swiftpdf_faqs', JSON.stringify(faqsList));
+  }, [faqsList]);
 
   // Auth screen redirection logic
   useEffect(() => {
@@ -437,6 +473,32 @@ export default function App() {
     }
   };
 
+  const handleAddFaq = (question: string, answer: string, category: 'pricing' | 'tools' | 'general') => {
+    const newFaq: FAQItem = {
+      id: `faq_${Date.now()}`,
+      question,
+      answer,
+      category,
+    };
+    setFaqsList((prev) => [...prev, newFaq]);
+    addSystemLog('FAQ Ajoutée', `Nouvelle FAQ créée : "${question.substring(0, 30)}..."`, 'success');
+  };
+
+  const handleEditFaq = (id: string, question: string, answer: string, category: 'pricing' | 'tools' | 'general') => {
+    setFaqsList((prev) =>
+      prev.map((faq) => (faq.id === id ? { ...faq, question, answer, category } : faq))
+    );
+    addSystemLog('FAQ Modifiée', `FAQ mise à jour : "${question.substring(0, 30)}..."`, 'info');
+  };
+
+  const handleDeleteFaq = (id: string) => {
+    const faqToDelete = faqsList.find(f => f.id === id);
+    setFaqsList((prev) => prev.filter((faq) => faq.id !== id));
+    if (faqToDelete) {
+      addSystemLog('FAQ Supprimée', `FAQ supprimée : "${faqToDelete.question.substring(0, 30)}..."`, 'warning');
+    }
+  };
+
   // Render proper screen
   const renderScreen = () => {
     // Maintenance override screen
@@ -458,7 +520,7 @@ export default function App() {
 
     if (!currentUser) {
       if (activeScreen === 'landing') {
-        return <LandingPage onNavigate={setActiveScreen} currentUser={currentUser} />;
+        return <LandingPage onNavigate={setActiveScreen} currentUser={currentUser} faqsList={faqsList} />;
       }
       if (activeScreen === 'pricing') {
         return (
@@ -520,6 +582,7 @@ export default function App() {
           <LandingPage
             onNavigate={setActiveScreen}
             currentUser={currentUser}
+            faqsList={faqsList}
           />
         );
       case 'dashboard':
@@ -552,6 +615,10 @@ export default function App() {
             onUpdateUserPlan={handleUpdateUserPlan}
             onToggleUserStatus={handleToggleUserStatus}
             onAddLog={addSystemLog}
+            faqsList={faqsList}
+            onAddFaq={handleAddFaq}
+            onEditFaq={handleEditFaq}
+            onDeleteFaq={handleDeleteFaq}
           />
         ) : (
           <div className="p-8 text-center text-rose-600 font-bold">Accès Non Autorisé</div>
