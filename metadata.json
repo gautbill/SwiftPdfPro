@@ -1,0 +1,6 @@
+{
+  "name": "Outils PDF et Image SaaS",
+  "description": "Plateforme SaaS complète pour la fusion, division, compression de PDF, conversions PDF/image/Word et panneau d'administration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

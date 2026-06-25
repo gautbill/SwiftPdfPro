@@ -1,0 +1,192 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased font-sans transition-colors duration-200;
+  }
+}
+
+/* Dark Mode Overrides for a Premium Slate/Zinc Aesthetic */
+body.dark {
+  background-color: #090d16 !important; /* Deepest dark slate/navy */
+  color: #f4f4f5 !important; /* Zinc-100 */
+}
+
+/* Ensure body dark backgrounds and wrappers */
+body.dark .bg-slate-50,
+body.dark .bg-slate-50\/50,
+body.dark main,
+body.dark .min-h-screen {
+  background-color: #090d16 !important;
+}
+
+/* Navbar, cards, and panels */
+body.dark nav,
+body.dark .bg-white,
+body.dark .bg-slate-100\/50,
+body.dark .bg-slate-50 {
+  background-color: #0f172a !important; /* Slate-900 */
+  border-color: #1e293b !important; /* Slate-800 */
+  color: #f4f4f5 !important;
+}
+
+/* Borders */
+body.dark .border-slate-100,
+body.dark .border-slate-200,
+body.dark .border-slate-200\/80,
+body.dark .border-slate-300,
+body.dark .border-slate-100\/50,
+body.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #1e293b !important; /* Slate-800 */
+}
+
+/* Text adaptations */
+body.dark .text-slate-900,
+body.dark .text-slate-800,
+body.dark h1,
+body.dark h2,
+body.dark h3,
+body.dark h4,
+body.dark span.text-slate-900 {
+  color: #f4f4f5 !important; /* Zinc-100 */
+}
+
+body.dark .text-slate-700,
+body.dark .text-slate-600,
+body.dark p,
+body.dark li {
+  color: #d4d4d8 !important; /* Zinc-300 */
+}
+
+body.dark .text-slate-500,
+body.dark .text-slate-400 {
+  color: #94a3b8 !important; /* Slate-400 */
+}
+
+/* Dark mode buttons, list items, hover states */
+body.dark .hover\:bg-slate-50:hover,
+body.dark .hover\:bg-slate-100:hover,
+body.dark .hover\:bg-slate-50\/70:hover {
+  background-color: #1e293b !important; /* Slate-800 */
+  color: #f4f4f5 !important;
+}
+
+body.dark .hover\:text-blue-600:hover {
+  color: #60a5fa !important; /* Blue-400 */
+}
+
+/* Standard Inputs and textareas */
+body.dark input,
+body.dark textarea,
+body.dark select {
+  background-color: #1e293b !important; /* Slate-800 */
+  border-color: #334155 !important; /* Slate-700 */
+  color: #f4f4f5 !important;
+}
+
+body.dark input::placeholder,
+body.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Specific elements to preserve/enhance in dark mode */
+body.dark .bg-blue-50,
+body.dark .bg-blue-50\/70 {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+}
+
+body.dark .text-blue-600,
+body.dark .text-blue-700 {
+  color: #60a5fa !important; /* Blue-400 */
+}
+
+body.dark .bg-blue-600 {
+  background-color: #2563eb !important; /* Keep blue buttons vibrant */
+}
+
+body.dark .bg-blue-600:hover {
+  background-color: #1d4ed8 !important;
+}
+
+/* Shadow adjustments */
+body.dark .shadow-xs,
+body.dark .shadow-sm,
+body.dark .shadow-md,
+body.dark .shadow-lg,
+body.dark .shadow-xl,
+body.dark .shadow-2xl {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Alerts and badges */
+body.dark .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+}
+body.dark .text-emerald-700, body.dark .text-emerald-600 {
+  color: #34d399 !important;
+}
+
+body.dark .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #fbbf24 !important;
+}
+body.dark .text-amber-700, body.dark .text-amber-900 {
+  color: #fbbf24 !important;
+}
+
+body.dark .bg-rose-50 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
+}
+body.dark .text-rose-700 {
+  color: #f87171 !important;
+}
+
+body.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+body.dark .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* Custom premium scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Glassmorphism utility */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-dark-effect {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
