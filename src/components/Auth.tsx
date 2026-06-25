@@ -238,45 +238,7 @@ export default function Auth({ onLoginSuccess, initialMode = 'login' }: AuthProp
           </div>
         </div>
 
-        {/* Demo Fast Login Helper */}
-        <div className="mt-6 p-4 bg-amber-50 rounded-2xl border border-amber-100 shadow-sm text-center">
-          <div className="flex items-center justify-center gap-1.5 text-amber-800 mb-2 font-semibold text-xs uppercase tracking-wider">
-            <Sparkles className="h-4 w-4 text-amber-500 animate-pulse" />
-            Accès d'évaluation rapide (Sans Formulaire)
-          </div>
-          <p className="text-xs text-amber-700/85 mb-3.5 leading-normal">
-            Basculez instantanément sur le profil de test de votre choix pour explorer l'ensemble du site.
-          </p>
-          <div className="flex gap-2">
-            <button
-              id="quick-user-login-btn"
-              onClick={() => handleQuickLogin()}
-              disabled={loading}
-              className="flex-1 bg-white hover:bg-amber-100/50 text-amber-900 border border-amber-200 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 shadow-xs cursor-pointer"
-            >
-              <Check className="h-3 w-3 text-amber-600" />
-              Client de Test
-            </button>
-            <button
-              id="quick-admin-login-btn"
-              onClick={() => {
-                setLoading(true);
-                setTimeout(() => {
-                  setLoading(false);
-                  const success = onLoginSuccess('admin@swiftpdf.pro', 'Admin SwiftPDF', true);
-                  if (!success) {
-                    setError("Ce compte de test administrateur a été suspendu.");
-                  }
-                }, 450);
-              }}
-              disabled={loading}
-              className="flex-1 bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 shadow-xs cursor-pointer"
-            >
-              <Shield className="h-3 w-3 text-rose-500 fill-rose-500/30" />
-              Admin de Test
-            </button>
-          </div>
-        </div>
+
       </div>
     </div>
   );
